@@ -3,6 +3,7 @@ const http = require('http')
 const socketio = require('socket.io')
 const path = require('path')
 const Filter = require('bad-words')
+const {generateMessage, generateLocationMessage} = require('./utils/messages')
 
 const PORT = process.env.PORT || 3000
 
@@ -17,8 +18,8 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket)=>{
     console.log('new connection')
 
-    socket.emit('message', 'welcome!!')
-    socket.broadcast.emit('message', 'new user has joined!!')
+    socket.emit('message', generateMessage('welcome!!'))
+    socket.broadcast.emit('message', generateMessage('new user has joined!!'))
 
     socket.on('sendMessage',(message, callback)=>{
         const filter = new Filter()
@@ -26,12 +27,12 @@ io.on('connection', (socket)=>{
         if(filter.isProfane(message)){
            return callback('profanity is not allowed!!')
         }
-        io.emit('message', message)
+        io.emit('message', generateMessage(message))
         callback()
     })
 
     socket.on('location', ({lat, long}, callback)=>{
-        io.emit('message', `https://google.com/maps?q=${lat},${long}`)
+        io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${lat},${long}`))
         callback()
     })
 
